@@ -2,13 +2,14 @@
   "name": "ats-gemini-proxy",
   "version": "1.0.0",
   "description": "Simple proxy to keep Gemini API key server-side for local ATS analyzer",
+  "author": "Omanox-dev",
+  "homepage": "https://github.com/omanox-dev/ATS",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "dependencies": {
     "axios": "^1.4.0",
     "cors": "^2.8.5",
