@@ -5,7 +5,8 @@ require('dotenv').config();
 
 const app = express();
 const path = require('path');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -45,8 +46,13 @@ app.post('/api/render-pdf', async (req, res) => {
   if (!html) return res.status(400).json({ error: 'Missing html in request body' });
 
   try {
-    // Launch puppeteer; use no-sandbox flags for many hosting environments.
-    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    // Launch puppeteer-core with @sparticuz/chromium for Vercel compatibility
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
