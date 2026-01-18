@@ -33,8 +33,9 @@ app.post('/api/generate', async (req, res) => {
     // Forward the provider response back to the client
     res.status(response.status).send(response.data);
   } catch (err) {
-    console.error('Proxy error:', err.response ? err.response.data : err.message);
-    res.status(500).json({ error: 'Proxy request failed', details: err.response ? err.response.data : err.message });
+    const errorData = err.response ? err.response.data : { message: err.message };
+    console.error('Proxy error:', JSON.stringify(errorData));
+    res.status(500).json({ error: 'Proxy request failed', details: errorData });
   }
 });
 
