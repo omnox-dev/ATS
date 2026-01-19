@@ -45,11 +45,11 @@
         <div class="text-center mb-8">
             <div class="mb-4 md:mb-6 max-w-xl mx-auto text-left">
                 <label for="apiKeyInput" class="block text-sm font-medium text-gray-300 mb-2">API Key</label>
-                <input id="apiKeyInput" type="password" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-gray-100 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Paste your API key here (kept in localStorage for convenience)">
+                <input id="apiKeyInput" type="password" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-gray-100 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Paste your API key here (kept in sessionStorage for temporary use)">
                 <div class="mt-2 flex items-center">
                     <input id="saveApiKey" type="checkbox" class="mr-2" checked>
-                    <label for="saveApiKey" class="text-sm text-gray-400">Save key in browser (localStorage)</label>
-                    <button id="clearApiKey" class="ml-4 text-sm text-red-400 hover:text-red-300">Clear saved key</button>
+                    <label for="saveApiKey" class="text-sm text-gray-400">Save key for this session (sessionStorage)</label>
+                    <button id="clearApiKey" class="ml-4 text-sm text-red-400 hover:text-red-300">Clear key</button>
                     <label class="ml-4 flex items-center text-sm text-gray-400"><input id="useProxy" type="checkbox" class="mr-2">Use local proxy</label>
                 </div>
             </div>
@@ -124,11 +124,84 @@
 
                 <label class="block text-sm text-gray-400 mb-2">Improved Resume Preview</label>
                 <textarea id="improvedResumeText" rows="12" class="w-full p-3 bg-black text-gray-100 rounded-md text-sm" readonly placeholder="Generated improved resume will appear here..." ></textarea>
+
+                <!-- Professional LaTeX Banner -->
+                <div id="latexBanner" class="mt-6 bg-gradient-to-r from-indigo-900 to-purple-900 p-6 rounded-lg border border-indigo-500 shadow-2xl text-center" style="display: none;">
+                    <div class="flex flex-col items-center">
+                        <div class="mb-4">
+                            <span class="bg-indigo-500 text-white text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide">Premium Upgrade</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Want this resume in a professional Resume format?</h3>
+                        <p class="text-indigo-200 mb-4 max-w-lg">Share this improved output with me to get a high-quality, recruiter-ready PDF.</p>
+                        
+                        <div class="flex flex-wrap justify-center gap-4">
+                            <a href="https://wa.me/919022826027" target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full flex items-center transition-all shadow-lg hover:scale-105">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                                WhatsApp: +91 9022826027
+                            </a>
+                            <button id="viewDemoResumes" class="bg-indigo-100 hover:bg-white text-indigo-900 font-bold py-3 px-6 rounded-full transition-all border border-indigo-300 shadow-lg">
+                                View Demo Resumes
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>
 
     </div>
+
+    <!-- Demo Resumes Modal -->
+    <div id="demoModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-gray-800 border border-gray-700 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl p-8 shadow-2xl relative">
+            <button id="closeDemoModal" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+            <h2 class="text-3xl font-bold text-white mb-6 border-b border-gray-700 pb-4">Resume Gallery</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Demo 1 -->
+                <div class="bg-gray-900 rounded-lg overflow-hidden border border-gray-700">
+                    <div class="h-48 bg-gray-700 flex items-center justify-center">
+                        <span class="text-gray-400">Preview 1 (Classic)</span>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-white">Classic Academic</h4>
+                        <p class="text-sm text-gray-400 mt-2">Perfect for research or formal engineering roles in India.</p>
+                    </div>
+                </div>
+                <!-- Demo 2 -->
+                <div class="bg-gray-900 rounded-lg overflow-hidden border border-gray-700">
+                    <div class="h-48 bg-gray-700 flex items-center justify-center">
+                        <span class="text-gray-400">Preview 2 (Modern)</span>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-white">Modern Professional</h4>
+                        <p class="text-sm text-gray-400 mt-2">Clean sidebar, high density, optimized for FAANG recruiters.</p>
+                    </div>
+                </div>
+                <!-- Demo 3 -->
+                <div class="bg-gray-900 rounded-lg overflow-hidden border border-gray-700">
+                    <div class="h-48 bg-gray-700 flex items-center justify-center">
+                        <span class="text-gray-400">Preview 3 (Minimalist)</span>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-white">The "Jake's Resume"</h4>
+                        <p class="text-sm text-gray-400 mt-2">The gold standard for ATS readability and simple layout.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center bg-indigo-900 bg-opacity-30 p-6 rounded-lg">
+                <p class="text-indigo-200 mb-4 font-medium italic">"The layout makes all the difference in getting that first interview call."</p>
+                <button onclick="window.open('https://wa.me/919022826027', '_blank')" class="bg-green-600 text-white font-bold py-2 px-8 rounded-md hover:bg-green-700">Request Custom Build</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- Disclaimer -->
+        <div class="mt-8 text-center text-sm text-gray-400">
+            <p class="mb-2">AI can make mistakes. Always review and verify the generated content.</p>
+            <p>Use proxy key, but if exhausted, use BYOK (Bring Your Own Key).</p>
+        </div>
 
         <footer class="text-center mt-8 text-sm text-gray-500">
             Built and maintained by <a class="text-indigo-300 hover:underline" href="https://github.com/omanox-dev">Omanox-dev</a>. Repository: <a class="text-indigo-300 hover:underline" href="https://github.com/omanox-dev/ATS">github.com/omanox-dev/ATS</a>
@@ -150,19 +223,28 @@
         const saveApiKeyCheckbox = document.getElementById('saveApiKey');
         const clearApiKeyButton = document.getElementById('clearApiKey');
         const useProxyCheckbox = document.getElementById('useProxy');
+        const latexBanner = document.getElementById('latexBanner');
+        const demoModal = document.getElementById('demoModal');
+        const viewDemoResumes = document.getElementById('viewDemoResumes');
+        const closeDemoModal = document.getElementById('closeDemoModal');
 
         analyzeButton.addEventListener('click', runAnalysis);
         toggleJson.addEventListener('click', () => {
             rawJson.style.display = rawJson.style.display === 'none' ? 'block' : 'none';
         });
 
-        // Prefill API key input from localStorage when the page loads
+        // Modal triggers
+        if (viewDemoResumes) viewDemoResumes.addEventListener('click', () => demoModal.style.display = 'flex');
+        if (closeDemoModal) closeDemoModal.addEventListener('click', () => demoModal.style.display = 'none');
+        window.onclick = (event) => { if (event.target == demoModal) demoModal.style.display = 'none'; };
+
+        // Prefill API key input from sessionStorage when the page loads
         window.addEventListener('DOMContentLoaded', () => {
             try {
-                const stored = localStorage.getItem('ats_api_key');
+                const stored = sessionStorage.getItem('ats_api_key');
                 if (stored && apiKeyInput) apiKeyInput.value = stored;
             } catch (e) {
-                console.warn('Could not read localStorage for API key', e);
+                console.warn('Could not read sessionStorage for API key', e);
             }
         });
 
@@ -171,13 +253,13 @@
             clearApiKeyButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 try {
-                    localStorage.removeItem('ats_api_key');
+                    sessionStorage.removeItem('ats_api_key');
                     if (apiKeyInput) apiKeyInput.value = '';
                     if (saveApiKeyCheckbox) saveApiKeyCheckbox.checked = false;
-                    alert('Saved API key cleared from browser storage.');
+                    alert('API key cleared from session storage.');
                 } catch (err) {
-                    console.error('Failed to clear API key from localStorage', err);
-                    alert('Failed to clear saved key. See console for details.');
+                    console.error('Failed to clear API key from sessionStorage', err);
+                    alert('Failed to clear key. See console for details.');
                 }
             });
         }
@@ -268,14 +350,14 @@ ${resume}
 Please perform the ATS analysis now.
             `;
             
-            // API key handling: read from the input or localStorage unless using a local proxy
+            // API key handling: read from the input or sessionStorage unless using a local proxy
             const useProxy = useProxyCheckbox && useProxyCheckbox.checked;
 
-            let apiKey = localStorage.getItem('ats_api_key') || '';
+            let apiKey = sessionStorage.getItem('ats_api_key') || '';
             if (apiKeyInput && apiKeyInput.value.trim()) {
                 apiKey = apiKeyInput.value.trim();
                 if (saveApiKeyCheckbox && saveApiKeyCheckbox.checked) {
-                    localStorage.setItem('ats_api_key', apiKey);
+                    sessionStorage.setItem('ats_api_key', apiKey);
                 }
             }
 
@@ -326,13 +408,32 @@ Please perform the ATS analysis now.
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2; // Exponential backoff
                     } else {
-                        // Other client-side error
-                        throw new Error(`API Error: ${response.statusText}`);
+                        // Other client-side error — break to handle below
+                        break;
                     }
                 }
 
-                if (!response.ok) {
-                    throw new Error('Failed to get a response from the API after retries.');
+                // If we failed and it was a Not Found (likely invalid model or key),
+                // attempt a fallback to the local proxy if not already using it.
+                if (!response || !response.ok) {
+                    if (!useProxy && response && response.status === 404) {
+                        console.info('Direct API returned 404 — retrying via local proxy /api/generate');
+                        // Switch to proxy and try once
+                        apiUrl = '/api/generate';
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (!response.ok) {
+                            const txt = await response.text();
+                            throw new Error(`Proxy fallback failed: ${response.status} ${txt}`);
+                        }
+                    } else {
+                        // No viable retry path
+                        const statusText = response ? response.statusText : 'no response';
+                        throw new Error(`API Error: ${statusText}`);
+                    }
                 }
                 
                 const result = await response.json();
@@ -382,6 +483,7 @@ Please perform the ATS analysis now.
             resultsWrapper.style.display = 'block';
             // Show improve section and populate missing-skills list if available
             if (improveSection) improveSection.style.display = 'block';
+            if (latexBanner) latexBanner.style.display = 'block';
         }
 
         function setLoading(isLoading) {
@@ -430,7 +532,7 @@ Provide a clean resume formatted as plain text. Keep names and dates as in the o
 
             // Determine apiUrl similar to runAnalysis
             const useProxy = useProxyCheckbox && useProxyCheckbox.checked;
-            let apiKey = localStorage.getItem('ats_api_key') || '';
+            let apiKey = sessionStorage.getItem('ats_api_key') || '';
             if (apiKeyInput && apiKeyInput.value.trim()) apiKey = apiKeyInput.value.trim();
 
             let apiUrl;

@@ -39,7 +39,11 @@ app.post('/api/generate', async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => res.send('Gemini proxy running'));
+// Serve the analyzer UI at root so visiting http://localhost:PORT loads the app
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'ats_analyzer.html')));
+
+// Simple health endpoint for monitoring
+app.get('/health', (req, res) => res.send('Gemini proxy running'));
 
 // Render provided HTML into a PDF and return it. Useful to create a formatted resume PDF.
 app.post('/api/render-pdf', async (req, res) => {

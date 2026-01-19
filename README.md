@@ -3,7 +3,7 @@
 Small local project to analyze resumes against job descriptions and generate ATS-friendly improvements.
 
 - **Author:** Omanox-dev
-- **Repository:** https://github.com/omanox-dev/ATS
+- **Repository:** https://github.com/omnox-dev/ATS
 - **License:** Proprietary — All Rights Reserved (see `LICENSE`)
 
 This repository contains a lightweight frontend (`ats_analyzer.html`) and a small Node.js proxy (`server.js`) to securely use the Gemini API for content generation and to render downloadable PDFs of improved resumes.
