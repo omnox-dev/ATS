@@ -17,7 +17,7 @@ app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
 // Serve static files from the React build directory
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(path.join(__dirname, '..', 'dist')));
 
 app.post('/api/generate', async (req, res) => {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -77,9 +77,13 @@ app.post('/api/render-pdf', async (req, res) => {
 
 // Serve the React app for all other routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;

@@ -1,4 +1,4 @@
-# ATS — AI-Powered Resume Analyzer (React Version)
+# ATSMASTER — AI-Powered Resume Analyzer (React Version)
 
 A modern React application to analyze resumes against job descriptions and generate ATS-friendly improvements. Optimized for both desktop and smartphone usage.
 
@@ -31,7 +31,7 @@ npm run dev
 ```
 Start the backend proxy (required for PDF rendering and secure API calls):
 ```bash
-node server.js
+node api/index.js
 ```
 
 ### 4. Build and Production
