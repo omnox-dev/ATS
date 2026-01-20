@@ -4,10 +4,6 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "ats_analyzer.html",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -16,12 +12,8 @@
       "dest": "server.js"
     },
     {
-      "src": "/",
-      "dest": "ats_analyzer.html"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "server.js"
     }
   ]
 }

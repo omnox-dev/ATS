@@ -1,22 +1,57 @@
-# ATS — AI-Powered Resume Analyzer
+# ATS — AI-Powered Resume Analyzer (React Version)
 
-Small local project to analyze resumes against job descriptions and generate ATS-friendly improvements.
+A modern React application to analyze resumes against job descriptions and generate ATS-friendly improvements. Optimized for both desktop and smartphone usage.
 
-- **Author:** Omanox-dev
+- **Author:** Omnox-dev
 - **Repository:** https://github.com/omnox-dev/ATS
 - **License:** Proprietary — All Rights Reserved (see `LICENSE`)
 
-This repository contains a lightweight frontend (`ats_analyzer.html`) and a small Node.js proxy (`server.js`) to securely use the Gemini API for content generation and to render downloadable PDFs of improved resumes.
+## Features
+- **AI Analysis:** Deep matching using Gemini API.
+- **Improved Resumes:** Automatic rewriting based on gaps.
+- **PDF Export:** High-quality PDF rendering via headless browser.
+- **Mobile First:** Fully responsive UI built with Tailwind CSS.
+- **Secure Proxy:** Keep API keys server-side for security.
 
-Usage
-1. Install dependencies: `npm install`
-2. Copy `.env.example` to `.env` and set `GEMINI_API_KEY`.
-3. Start the server: `node server.js`.
-4. Open `http://localhost:3000/ats_analyzer.html` in your browser.
+## Usage
 
-Security note
-- Keep the `GEMINI_API_KEY` in the server `.env` file and do not commit it. `.env` is included in `.gitignore`.
+### 1. Prerequisites
+- Node.js installed.
+- Gemini API Key.
 
-Development
------------
-This project was developed using Visual Studio Code and GitHub Copilot Agentic AI Mode. The codebase and iterative changes were authored and reviewed in VS Code with Copilot assisting code generation and refactors. For questions about development environment or workflows, see the repository and contact the author.
+### 2. Setup
+1. Clone the repository.
+2. Install dependencies: `npm install`
+3. Copy `.env.example` to `.env` and set your `GEMINI_API_KEY`.
+
+### 3. Local Development
+Start the development server (Vite):
+```bash
+npm run dev
+```
+Start the backend proxy (required for PDF rendering and secure API calls):
+```bash
+node server.js
+```
+
+### 4. Build and Production
+Build the React frontend:
+```bash
+npm run build
+```
+Run the unified server (serves the React app and handles API calls):
+```bash
+npm start
+```
+Open `http://localhost:3000` in your browser.
+
+## Security
+- API keys are handled via a local Node.js proxy to prevent exposure in the browser. 
+- Environment variables are stored in `.env` (ignored by git).
+
+## Project Structure
+- `src/`: React frontend source code.
+- `server.js`: Node/Express backend proxy and PDF engine.
+- `dist/`: Compiled production build.
+- `legacy/`: Old standalone HTML files (optional).
+

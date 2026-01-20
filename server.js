@@ -1,20 +1,23 @@
-const express = require('express');
-const axios = require('axios');
-const cors = require('cors');
-require('dotenv').config();
+import express from 'express';
+import axios from 'axios';
+import cors from 'cors';
+import 'dotenv/config';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const path = require('path');
-const puppeteer = require('puppeteer-core');
-const chromium = require('@sparticuz/chromium');
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
-// Serve static files (frontend) from project root so you can open
-// http://localhost:PORT/ats_analyzer.html and the proxy will be same-origin.
-app.use(express.static(path.join(__dirname)));
+// Serve static files from the React build directory
+app.use(express.static(path.join(__dirname, 'dist')));
 
 app.post('/api/generate', async (req, res) => {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -39,11 +42,8 @@ app.post('/api/generate', async (req, res) => {
   }
 });
 
-// Serve the analyzer UI at root so visiting http://localhost:PORT loads the app
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'ats_analyzer.html')));
-
 // Simple health endpoint for monitoring
-app.get('/health', (req, res) => res.send('Gemini proxy running'));
+app.get('/api/health', (req, res) => res.send('Gemini proxy running'));
 
 // Render provided HTML into a PDF and return it. Useful to create a formatted resume PDF.
 app.post('/api/render-pdf', async (req, res) => {
@@ -73,6 +73,11 @@ app.post('/api/render-pdf', async (req, res) => {
     console.error('PDF render error:', err);
     return res.status(500).json({ error: 'Failed to render PDF', details: err.message });
   }
+});
+
+// Serve the React app for all other routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(PORT, () => {
