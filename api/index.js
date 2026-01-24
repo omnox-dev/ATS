@@ -3,6 +3,7 @@ import axios from 'axios';
 import cors from 'cors';
 import 'dotenv/config';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
@@ -20,15 +21,17 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, '..', 'dist')));
 
 app.post('/api/generate', async (req, res) => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const { key, ...geminiPayload } = req.body;
+  const apiKey = key || process.env.GEMINI_API_KEY;
+  
   if (!apiKey) {
-    return res.status(500).json({ error: 'Server missing GEMINI_API_KEY environment variable' });
+    return res.status(500).json({ error: 'Server missing GEMINI_API_KEY environment variable and no user key provided' });
   }
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${encodeURIComponent(apiKey)}`;
 
   try {
-    const response = await axios.post(url, req.body, {
+    const response = await axios.post(url, geminiPayload, {
       headers: { 'Content-Type': 'application/json' },
       timeout: 60000,
     });
@@ -45,6 +48,35 @@ app.post('/api/generate', async (req, res) => {
 // Simple health endpoint for monitoring
 app.get('/api/health', (req, res) => res.send('Gemini proxy running'));
 
+// Config endpoint for remote control
+app.get('/api/config', (req, res) => {
+  const configPath = path.join(__dirname, 'config.json');
+  try {
+    const configData = fs.readFileSync(configPath, 'utf8');
+    res.json(JSON.parse(configData));
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load configuration' });
+  }
+});
+
+// Update config (Protected)
+app.post('/api/config/update', (req, res) => {
+  const { password, config } = req.body;
+  const ADMIN_PASS = "admin123"; // You can change this or use process.env.ADMIN_PASSWORD
+
+  if (password !== ADMIN_PASS) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const configPath = path.join(__dirname, 'config.json');
+  try {
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+    res.json({ message: 'Config updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save configuration' });
+  }
+});
+
 // Render provided HTML into a PDF and return it. Useful to create a formatted resume PDF.
 app.post('/api/render-pdf', async (req, res) => {
   const { html } = req.body || {};
@@ -52,12 +84,35 @@ app.post('/api/render-pdf', async (req, res) => {
 
   try {
     // Launch puppeteer-core with @sparticuz/chromium for Vercel compatibility
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-    });
+    // For local development on Windows, we try to find the local Chrome installation
+    let options = {};
+    
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      options = {
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      };
+    } else {
+      // Local development (Windows/Mac)
+      // Try to find local Chrome
+      const chromePaths = [
+        'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+        process.env.CHROME_PATH // Allow override via .env
+      ];
+      
+      let localPath = chromePaths.find(p => p && fs.existsSync(p));
+
+      options = {
+        args: [],
+        executablePath: localPath || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        headless: 'new', // Use the modern headless mode
+      };
+    }
+
+    const browser = await puppeteer.launch(options);
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
@@ -72,6 +127,41 @@ app.post('/api/render-pdf', async (req, res) => {
   } catch (err) {
     console.error('PDF render error:', err);
     return res.status(500).json({ error: 'Failed to render PDF', details: err.message });
+  }
+});
+
+// Endpoint to handle "Automatic" submissions for optimization requests
+app.post('/api/submit-optimization', async (req, res) => {
+  const { userData, report, optimizedText } = req.body;
+  
+  if (!userData || !userData.email) {
+    return res.status(400).json({ error: 'User data and email are required' });
+  }
+
+  const submissionsDir = path.join(__dirname, '..', 'submissions');
+  
+  // Ensure directory exists
+  if (!fs.existsSync(submissionsDir)) {
+    fs.mkdirSync(submissionsDir, { recursive: true });
+  }
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const fileName = `order_${timestamp}_${userData.name.replace(/\s+/g, '_')}.json`;
+  const filePath = path.join(submissionsDir, fileName);
+
+  const fullData = {
+    submittedAt: new Date().toISOString(),
+    user: userData,
+    analysisReport: report,
+    optimizedResume: optimizedText
+  };
+
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(fullData, null, 2), 'utf8');
+    res.json({ message: 'Optimization request submitted successfully', id: fileName });
+  } catch (err) {
+    console.error('Submission error:', err);
+    res.status(500).json({ error: 'Failed to save submission locally' });
   }
 });
 

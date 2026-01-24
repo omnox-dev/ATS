@@ -5,7 +5,7 @@
   "description": "Simple proxy to keep Gemini API key server-side for local ATS analyzer",
   "author": "Omnox-dev",
   "homepage": "https://github.com/omnox-dev/ATS",
-  "main": "server.js",
+  "main": "api/index.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

@@ -1,25 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FileSearch, Menu, X, Sun, Moon } from 'lucide-react';
+import { Menu, X, Sun, Moon, Zap, Clock } from 'lucide-react';
+import axios from 'axios';
 
 const Navbar = ({ theme, onToggleTheme }) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [hiringEnabled, setHiringEnabled] = useState(true);
+  const [isOccupied, setIsOccupied] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
+  const [serviceFee, setServiceFee] = useState(69);
+
+  useEffect(() => {
+    const checkHiring = async () => {
+      try {
+        const resp = await axios.get('/api/config');
+        setHiringEnabled(resp.data.hiringEnabled !== false);
+        setIsOccupied(resp.data.occupiedMode === true);
+        setAnnouncement(resp.data.announcement || '');
+        setServiceFee(resp.data.serviceFee || 69);
+      } catch (e) {
+        // Fallback to enabled
+      }
+    };
+    checkHiring();
+  }, [location.pathname]); // Re-check on navigation
 
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Resume Analyzer', path: '/analyzer' },
-    { name: 'Project Info', path: '/' },
+    { name: 'Project Info', path: '/project-info' },
   ];
 
   return (
-    <nav className="fixed top-0 z-50 w-full border-b border-[var(--border-subtle)] bg-[var(--bg-nav)] backdrop-blur-lg transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      {announcement && (
+        <div className="fixed top-0 z-[60] w-full bg-[#10b981] text-white py-2 text-center text-[10px] font-black uppercase tracking-[0.2em] shadow-lg">
+          <span className="inline-block animate-pulse mr-2">●</span> {announcement}
+        </div>
+      )}
+      <nav className={`fixed ${announcement ? 'top-8' : 'top-0'} z-50 w-full border-b border-[var(--border-subtle)] bg-[var(--bg-nav)] backdrop-blur-lg transition-all duration-300 shadow-sm`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
           {/* Logo Section */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="bg-[var(--bg-card)] p-1.5 rounded border border-[var(--border-subtle)] group-hover:opacity-80 transition-all">
-              <FileSearch className="w-5 h-5 text-[#10b981]" />
+            <div className="w-10 h-10 rounded border border-[var(--border-subtle)] overflow-hidden group-hover:opacity-80 transition-all flex items-center justify-center bg-[var(--bg-card)]">
+              <img 
+                src={theme === 'dark' ? '/night.png' : '/day.png'} 
+                alt="Logo" 
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="font-display text-xl font-black tracking-tight text-[var(--text-main)] uppercase flex items-center">
               ATS<span className="text-[#10b981]">MASTER</span> 
@@ -61,6 +91,20 @@ const Navbar = ({ theme, onToggleTheme }) => {
             >
               Analyze Resume
             </Link>
+            {hiringEnabled && (
+              <button 
+                onClick={() => {
+                  const msg = isOccupied 
+                    ? `Hi Omnox! I'd like to join the waitlist for your Structural LaTeX Typesetting service (₹${serviceFee}).` 
+                    : `Hi Omnox! I'm interested in the ₹${serviceFee} Professional LaTeX Typesetting service. Can you help me?`;
+                  window.open(`https://wa.me/919022826027?text=${encodeURIComponent(msg)}`, '_blank');
+                }}
+                className={`flex items-center gap-2 ${isOccupied ? 'bg-amber-600 hover:bg-amber-500' : 'bg-purple-600 hover:bg-purple-500'} text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg animate-pulse hover:animate-none`}
+              >
+                {isOccupied ? <Clock className="w-4 h-4" /> : <Zap className="w-4 h-4 fill-current" />}
+                {isOccupied ? 'Join Waitlist' : 'Hire Me'}
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Button & Toggle */}
@@ -98,7 +142,7 @@ const Navbar = ({ theme, onToggleTheme }) => {
               {link.name}
             </Link>
           ))}
-          <div className="pt-4 pb-2 border-t border-[var(--border-subtle)]">
+          <div className="pt-4 pb-2 border-t border-[var(--border-subtle)] space-y-3">
             <Link
               to="/analyzer"
               onClick={() => setIsOpen(false)}
@@ -106,10 +150,27 @@ const Navbar = ({ theme, onToggleTheme }) => {
             >
               Analyze Resume
             </Link>
+            {hiringEnabled && (
+                <button
+                  onClick={() => {
+                    const msg = isOccupied 
+                      ? `Hi Omnox! I'd like to join the waitlist for your Structural LaTeX Typesetting service (₹${serviceFee}).` 
+                      : `Hi Omnox! I'm interested in the ₹${serviceFee} Professional LaTeX Typesetting service. Can you help me?`;
+                    window.open(`https://wa.me/919022826027?text=${encodeURIComponent(msg)}`, '_blank');
+                    setIsOpen(false);
+                  }}
+                  className={`flex items-center justify-center gap-2 w-full text-center ${isOccupied ? 'bg-amber-600' : 'bg-purple-600'} text-white px-4 py-3 rounded-md font-bold`}
+                >
+                  {isOccupied ? <Clock className="w-4 h-4" /> : <Zap className="w-4 h-4 fill-current" />}
+                  {isOccupied ? 'Join Waitlist' : 'Professional Hire'}
+                </button>
+            )}
           </div>
         </div>
       )}
-    </nav>
+
+      </nav>
+    </>
   );
 };
 

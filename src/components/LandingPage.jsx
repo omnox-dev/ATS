@@ -5,19 +5,25 @@ import { Key, Terminal, BrainCircuit, Info, Lightbulb, SearchCode, Shield, Zap }
 
 const LandingPage = () => {
   return (
-    <div className="bg-[var(--bg-main)] text-[var(--text-main)] font-sans selection:bg-[#10b981]/30 min-h-screen transition-colors duration-300">
-      <section className="relative pt-20 pb-12 lg:pt-36 overflow-hidden min-h-screen flex flex-col justify-start">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-[var(--bg-main)] text-[var(--text-main)] font-sans selection:bg-[#10b981]/30 min-h-screen transition-colors duration-300"
+    >
+      <section className="relative pt-24 pb-12 lg:pt-36 overflow-hidden min-h-screen flex flex-col justify-start">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[var(--bg-card)] border border-[var(--border-subtle)] text-[#10b981] text-xs font-bold uppercase tracking-[0.2em]">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="space-y-6 lg:space-y-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[var(--bg-card)] border border-[var(--border-subtle)] text-[#10b981] text-[10px] font-bold uppercase tracking-[0.2em]">
                 Simple Student Resume Helper
               </div>
-              <h1 className="font-display text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] text-[var(--text-main)]">
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-[var(--text-main)]">
                 Understand your resume structure with <span className="text-[#10b981]">ATSMASTER.</span>
               </h1>
-              <p className="text-[var(--text-muted)] text-lg md:text-xl max-w-xl leading-relaxed">
-                A student-built tool to help you identify missing keywords and formatting issues. Peer-to-peer help, no corporate guarantees.
+              <p className="text-[var(--text-muted)] text-base md:text-lg lg:text-xl max-w-xl leading-relaxed">
+                A student-built tool to help you identify missing keywords and formatting issues. We provide structural improvement and professional LaTeX typesetting.
               </p>
               <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
                 <Link to="/analyzer" className="w-full sm:w-auto bg-[#10b981] text-white hover:bg-emerald-400 px-10 py-4 rounded-xl font-bold text-lg transition-all shadow-xl text-center">
@@ -33,8 +39,8 @@ const LandingPage = () => {
             </div>
             
             <div className="relative">
-              <div className="bg-[var(--bg-card)] p-8 rounded-2xl border border-[var(--border-subtle)] backdrop-blur-sm">
-                <h2 className="text-xl font-bold mb-6 flex items-center gap-3 text-[var(--text-main)]">
+              <div className="bg-[var(--bg-card)] p-6 sm:p-8 rounded-2xl border border-[var(--border-subtle)] backdrop-blur-sm">
+                <h2 className="text-lg sm:text-xl font-bold mb-6 flex items-center gap-3 text-[var(--text-main)]">
                    <div className="bg-[var(--bg-card)] p-1.5 rounded border border-[var(--border-subtle)]">
                     <Info className="w-4 h-4 text-[#10b981]" />
                    </div>
@@ -107,31 +113,35 @@ const LandingPage = () => {
       {/* CTA Section */}
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#1e293b] border border-slate-700 rounded-2xl overflow-hidden shadow-2xl">
+          <div className="bg-[#1e293b] border border-slate-700 rounded-3xl overflow-hidden shadow-2xl">
             <div className="grid lg:grid-cols-2">
               <div className="p-12 lg:p-16 flex flex-col justify-center">
-                <h2 className="font-display text-4xl font-bold mb-6 text-white leading-tight">Ready to improve your resume structure?</h2>
-                <p className="text-slate-400 mb-10 text-lg">Use the analyzer to see how your PDF looks to a simple text-based system.</p>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-[#10b981] text-[10px] font-black uppercase tracking-widest mb-6 w-fit">
+                    Neural Ready
+                </div>
+                <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-white leading-tight uppercase tracking-tighter">Ready to <span className="text-[#10b981]">Upgrade</span> your career?</h2>
+                <p className="text-slate-400 mb-10 text-base sm:text-lg font-medium">Use the analyzer for free or hire a student expert for professional LaTeX typesetting starting at <span className="text-white font-bold">₹69</span>.</p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Link to="/analyzer" className="bg-[#10b981] text-[#0f172a] px-8 py-4 rounded font-bold hover:bg-emerald-400 transition-all text-center">
+                  <Link to="/analyzer" className="bg-[#10b981] text-[#0f172a] px-8 py-4 rounded-xl font-bold hover:bg-emerald-400 transition-all text-center uppercase tracking-widest text-xs">
                     Go to Analyzer
                   </Link>
-                  <a href="https://github.com/omnox-dev/ATS" target="_blank" className="text-white px-8 py-4 rounded font-bold border border-slate-600 hover:border-slate-400 transition-colors text-center">
-                    Star on GitHub
-                  </a>
+                  <button onClick={() => window.open('https://github.com/omnox-dev/ATS')} className="text-white px-8 py-4 rounded-xl font-bold border border-slate-600 hover:border-slate-400 transition-colors text-center uppercase tracking-widest text-xs">
+                    Open Source 
+                  </button>
                 </div>
               </div>
-              <div className="bg-slate-800/50 border-l border-slate-700 p-12 flex items-center justify-center">
-                <div className="grid grid-cols-2 gap-8 w-full">
+              <div className="bg-slate-800/50 border-t lg:border-t-0 lg:border-l border-slate-700 p-8 sm:p-12 lg:p-16 flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#10b981] via-transparent to-transparent"></div>
+                <div className="grid grid-cols-2 gap-6 sm:gap-8 w-full relative z-10">
                   {[
-                    { val: "Student", label: "Project Status" },
-                    { val: "Open", label: "Source Access" },
+                    { val: "₹69", label: "Min. Rate" },
+                    { val: "2.5", label: "Flash Engine" },
                     { val: "100%", label: "Privacy Focus" },
-                    { val: "Peer", label: "Review Model" }
+                    { val: "Peer", label: "Community" }
                   ].map((stat, i) => (
                     <div key={i}>
-                      <div className="text-3xl font-display font-bold text-white mb-1 tracking-tight">{stat.val}</div>
-                      <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{stat.label}</div>
+                      <div className="text-2xl sm:text-3xl font-display font-bold text-white mb-1 tracking-tight">{stat.val}</div>
+                      <div className="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-widest">{stat.label}</div>
                     </div>
                   ))}
                 </div>
@@ -140,7 +150,7 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 };
 

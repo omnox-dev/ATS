@@ -1,0 +1,9 @@
+{
+  "maintenanceMode": false,
+  "serviceFee": 69,
+  "updateFee": 30,
+  "hiringEnabled": true,
+  "alertMessage": " ",
+  "announcement": "",
+  "occupiedMode": false
+}
