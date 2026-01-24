@@ -62,7 +62,7 @@ app.get('/api/config', (req, res) => {
 // Update config (Protected)
 app.post('/api/config/update', (req, res) => {
   const { password, config } = req.body;
-  const ADMIN_PASS = "admin123"; // You can change this or use process.env.ADMIN_PASSWORD
+  const ADMIN_PASS = process.env.ADMIN_PASSWORD || 'admin123';
 
   if (password !== ADMIN_PASS) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -75,6 +75,18 @@ app.post('/api/config/update', (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Failed to save configuration' });
   }
+});
+
+// Authentication endpoint for admin login
+app.post('/api/auth', (req, res) => {
+  const { password } = req.body || {};
+  const ADMIN_PASS = process.env.ADMIN_PASSWORD || 'admin123';
+
+  if (password === ADMIN_PASS) {
+    return res.json({ authenticated: true });
+  }
+
+  return res.status(401).json({ error: 'Unauthorized' });
 });
 
 // Render provided HTML into a PDF and return it. Useful to create a formatted resume PDF.

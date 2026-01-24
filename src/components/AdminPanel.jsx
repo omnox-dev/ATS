@@ -22,12 +22,17 @@ const AdminPanel = () => {
         fetchConfig();
     }, []);
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (password === 'admin123') { // Same as backend
-            setAuthenticated(true);
-            setMessage({ type: 'success', text: 'Authenticated' });
-        } else {
+        try {
+            const resp = await axios.post('/api/auth', { password });
+            if (resp.data?.authenticated) {
+                setAuthenticated(true);
+                setMessage({ type: 'success', text: 'Authenticated' });
+            } else {
+                setMessage({ type: 'error', text: 'Invalid password' });
+            }
+        } catch (err) {
             setMessage({ type: 'error', text: 'Invalid password' });
         }
     };
