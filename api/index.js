@@ -100,10 +100,9 @@ app.post('/api/render-pdf', async (req, res) => {
     let options = {};
     
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-      // For Node 20/22+ (Amazon Linux 2023), we must use graphics-mode logic
-      // and ensure we don't manually override critical flags from sparticuz
+      // Cleanest possible launch for AL2023 compatibility
       options = {
-        args: [...chromium.args, '--font-render-hinting=none', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+        args: chromium.args,
         defaultViewport: chromium.defaultViewport,
         executablePath: await chromium.executablePath(),
         headless: chromium.headless,

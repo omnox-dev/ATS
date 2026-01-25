@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FileSearch, 
@@ -558,96 +560,165 @@ const ATSAnalyzer = () => {
     };
 
     const downloadPdf = async () => {
-        if (!useProxy) {
-            alert('Enable "Cloud Key" in the configuration to generate PDF files.');
-            return;
-        }
-        setIsGeneratingPdf(true);
-        try {
-            const score = analysisResults?.overallScore || 0;
-            const html = `
-                <html>
-                <head>
-                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-                    <style>
-                        body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
-                        .header { border-bottom: 4px solid #10b981; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-                        .logo { font-size: 24px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; }
-                        .logo span { color: #10b981; }
-                        .score-card { background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 30px; }
-                        .score-value { font-size: 48px; font-weight: 900; color: #10b981; }
-                        .section-title { font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #64748b; margin-bottom: 15px; border-left: 4px solid #10b981; padding-left: 12px; }
-                        .list-item { margin-bottom: 8px; font-size: 13px; display: flex; gap: 8px; }
-                        .bullet { color: #10b981; font-weight: bold; }
-                        .resume-box { background: #fff; border: 1px solid #e2e8f0; padding: 30px; border-radius: 8px; font-size: 12px; white-space: pre-wrap; }
-                        .footer { margin-top: 50px; font-size: 10px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <div class="logo">ATS<span>MASTER</span></div>
-                        <div style="text-align: right; font-size: 12px; color: #64748b;">Generated: ${new Date().toLocaleDateString()}</div>
-                    </div>
+        // First try server-side (High Quality)
+        if (useProxy) {
+            setIsGeneratingPdf(true);
+            try {
+                const score = analysisResults?.overallScore || 0;
+                const html = `
+                    <html>
+                    <head>
+                        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+                        <style>
+                            body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
+                            .header { border-bottom: 4px solid #10b981; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+                            .logo { font-size: 24px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; }
+                            .logo span { color: #10b981; }
+                            .score-card { background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 30px; }
+                            .score-value { font-size: 48px; font-weight: 900; color: #10b981; }
+                            .section-title { font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #64748b; margin-bottom: 15px; border-left: 4px solid #10b981; padding-left: 12px; }
+                            .list-item { margin-bottom: 8px; font-size: 13px; display: flex; gap: 8px; }
+                            .bullet { color: #10b981; font-weight: bold; }
+                            .resume-box { background: #fff; border: 1px solid #e2e8f0; padding: 30px; border-radius: 8px; font-size: 12px; white-space: pre-wrap; }
+                            .footer { margin-top: 50px; font-size: 10px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <div class="logo">ATS<span>MASTER</span></div>
+                            <div style="text-align: right; font-size: 12px; color: #64748b;">Generated: ${new Date().toLocaleDateString()}</div>
+                        </div>
 
-                    <div class="score-card">
-                        <div style="display: flex; gap: 40px; align-items: center;">
+                        <div class="score-card">
+                            <div style="display: flex; gap: 40px; align-items: center;">
+                                <div>
+                                    <div class="score-value">${score}%</div>
+                                    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b;">Analysis Score</div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div class="section-title">Professional Summary</div>
+                                    <div style="font-size: 14px;">${analysisResults?.summary || 'No summary available.'}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
                             <div>
-                                <div class="score-value">${score}%</div>
-                                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b;">Analysis Score</div>
+                                <div class="section-title">Key Strengths</div>
+                                ${(analysisResults?.strengths || []).map(s => `<div class="list-item"><span class="bullet">✓</span> ${s}</div>`).join('')}
                             </div>
-                            <div style="flex: 1;">
-                                <div class="section-title">Professional Summary</div>
-                                <div style="font-size: 14px;">${analysisResults?.summary || 'No summary available.'}</div>
+                            <div>
+                                <div class="section-title">Identified Gaps</div>
+                                ${(analysisResults?.weaknesses || []).map(w => `<div class="list-item"><span class="bullet" style="color:#ef4444">•</span> ${w}</div>`).join('')}
                             </div>
                         </div>
-                    </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-                        <div>
-                            <div class="section-title">Key Strengths</div>
-                            ${(analysisResults?.strengths || []).map(s => `<div class="list-item"><span class="bullet">✓</span> ${s}</div>`).join('')}
+                        ${improvedResume ? `
+                            <div class="section-title">Strategically Optimized Resume</div>
+                            <div class="resume-box">${improvedResume}</div>
+                        ` : ''}
+
+                        <div class="footer">
+                            This report was generated using ATSMASTER Neural Analysis. For peer-to-peer educational use only.
                         </div>
-                        <div>
-                            <div class="section-title">Identified Gaps</div>
-                            ${(analysisResults?.weaknesses || []).map(w => `<div class="list-item"><span class="bullet" style="color:#ef4444">•</span> ${w}</div>`).join('')}
-                        </div>
-                    </div>
-
-                    ${improvedResume ? `
-                        <div class="section-title">Strategically Optimized Resume</div>
-                        <div class="resume-box">${improvedResume}</div>
-                    ` : ''}
-
-                    <div class="footer">
-                        This report was generated using ATSMASTER Neural Analysis. For peer-to-peer educational use only.
-                    </div>
-                </body>
-                </html>
-            `;
-            const resp = await axios.post('/api/render-pdf', { html }, { responseType: 'blob' });
-            const url = URL.createObjectURL(new Blob([resp.data], { type: 'application/pdf' }));
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'ATS_Master_Report.pdf';
-            a.click();
-        } catch (e) {
-            console.error(e);
-            let detail = 'PDF creation failed.';
-            if (e.response && e.response.data instanceof Blob) {
-                // Try to read the error from the blob response
-                const reader = new FileReader();
-                reader.onload = () => {
-                   try {
-                     const errData = JSON.parse(reader.result);
-                     alert(`PDF Error: ${errData.details || errData.error}`);
-                   } catch(parseErr) {
-                     alert('PDF creation failed. Check console for details.');
-                   }
-                };
-                reader.readAsText(e.response.data);
-            } else {
-                alert(detail + ' ' + (e.response?.data?.error || e.message));
+                    </body>
+                    </html>
+                `;
+                const resp = await axios.post('/api/render-pdf', { html }, { responseType: 'blob' });
+                const url = URL.createObjectURL(new Blob([resp.data], { type: 'application/pdf' }));
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ATS_Master_Report.pdf';
+                a.click();
+                setIsGeneratingPdf(false);
+                return;
+            } catch (err) {
+                console.warn('Server-side PDF failed, falling back to client-side...', err);
+                // Continue to client-side
             }
+        }
+
+        // Client-side Fallback (Works everywhere)
+        try {
+            const doc = new jsPDF();
+            const margin = 20;
+            let cursorY = 20;
+
+            // Header
+            doc.setFontSize(22);
+            doc.setTextColor(16, 185, 129); // #10b981
+            doc.setFont('helvetica', 'bold');
+            doc.text('ATS MASTER', margin, cursorY);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100, 116, 139);
+            doc.text(`Generated: ${new Date().toLocaleDateString()}`, 190, cursorY, { align: 'right' });
+            
+            cursorY += 10;
+            doc.setDrawColor(16, 185, 129);
+            doc.setLineWidth(1);
+            doc.line(margin, cursorY, 190, cursorY);
+
+            // Score Section
+            cursorY += 15;
+            doc.setFillColor(248, 250, 252);
+            doc.rect(margin, cursorY, 170, 40, 'F');
+            doc.setDrawColor(226, 232, 240);
+            doc.rect(margin, cursorY, 170, 40, 'S');
+
+            doc.setFontSize(40);
+            doc.setTextColor(16, 185, 129);
+            doc.text(`${analysisResults?.overallScore || 0}%`, margin + 10, cursorY + 25);
+            
+            doc.setFontSize(14);
+            doc.setTextColor(30, 41, 59);
+            doc.text('NEURAL SUMMARY', margin + 60, cursorY + 10);
+            
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            const summaryLines = doc.splitTextToSize(analysisResults?.summary || '', 100);
+            doc.text(summaryLines, margin + 60, cursorY + 18);
+
+            // Strengths & Weaknesses
+            cursorY += 55;
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('STRENGTHS', margin, cursorY);
+            doc.text('WEAKNESSES', margin + 85, cursorY);
+
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            let sY = cursorY + 8;
+            (analysisResults?.strengths || []).slice(0, 10).forEach(s => {
+                doc.text(`\u2022 ${s}`, margin, sY);
+                sY += 5;
+            });
+
+            let wY = cursorY + 8;
+            (analysisResults?.weaknesses || []).slice(0, 10).forEach(w => {
+                doc.text(`\u2022 ${w}`, margin + 85, wY);
+                wY += 5;
+            });
+
+            // Improved Resume
+            if (improvedResume) {
+                doc.addPage();
+                cursorY = 20;
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text('OPTIMIZED CONTENT', margin, cursorY);
+                
+                cursorY += 10;
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                const resumeLines = doc.splitTextToSize(improvedResume, 170);
+                doc.text(resumeLines, margin, cursorY);
+            }
+
+            doc.save('ATS_Master_Report.pdf');
+        } catch (clientErr) {
+            console.error('Client PDF error:', clientErr);
+            alert('PDF generation failed on both server and client.');
         } finally {
             setIsGeneratingPdf(false);
         }
