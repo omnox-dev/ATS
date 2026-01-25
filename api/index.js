@@ -143,10 +143,27 @@ app.post('/api/render-pdf', async (req, res) => {
       headless: options.headless,
     });
 
+    console.log('Launching browser...');
     const browser = await puppeteer.launch(options);
+    
+    console.log('Creating new page...');
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+    
+    console.log('Setting content...');
+    // Use networkidle2 instead of 0 to be more resilient to slow font loading
+    await page.setContent(html, { 
+      waitUntil: 'networkidle2',
+      timeout: 30000 
+    });
+    
+    console.log('Generating PDF...');
+    const pdfBuffer = await page.pdf({ 
+      format: 'A4', 
+      printBackground: true,
+      timeout: 30000
+    });
+    
+    console.log('Closing browser...');
     await browser.close();
 
     res.set({
