@@ -185,7 +185,10 @@ app.get('/api/pdf-diagnostics', async (req, res) => {
       env: { NODE_ENV: process.env.NODE_ENV, VERCEL: process.env.VERCEL },
       chromiumPath,
       chromiumArgs: chromium ? chromium.args : null,
-      puppeteerVersion: require('../package.json').dependencies['puppeteer-core'] || null,
+      envVars: { 
+        HAS_CHROME_PATH: !!process.env.CHROME_PATH,
+        NODE_ENV: process.env.NODE_ENV 
+      }
     });
   } catch (err) {
     return res.status(500).json({ error: 'Diagnostics failed', details: err && err.message });
