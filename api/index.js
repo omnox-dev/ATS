@@ -46,30 +46,39 @@ app.post('/api/generate', async (req, res) => {
 // Simple health endpoint for monitoring
 app.get('/api/health', (req, res) => res.send('Gemini proxy running'));
 
-// Config endpoint for remote control
-app.get('/api/config', (req, res) => {
+// In-memory config cache to handle Vercel's read-only filesystem
+let cachedConfig = null;
+
+const loadConfig = () => {
+  if (cachedConfig) return cachedConfig;
+  
   try {
     const configPath = path.join(process.cwd(), 'api', 'config.json');
     if (fs.existsSync(configPath)) {
-      const configData = fs.readFileSync(configPath, 'utf8');
-      return res.json(JSON.parse(configData));
+      const data = fs.readFileSync(configPath, 'utf8');
+      cachedConfig = JSON.parse(data);
+      return cachedConfig;
     }
-    
-    // Fallback if file doesn't exist (helpful for Vercel environments)
-    console.warn('Config file not found at:', configPath, 'using defaults');
-    res.json({
-      maintenanceMode: false,
-      serviceFee: 69,
-      updateFee: 30,
-      hiringEnabled: true,
-      alertMessage: " ",
-      announcement: "",
-      occupiedMode: false
-    });
   } catch (err) {
-    console.error('Config load error:', err);
-    res.status(500).json({ error: 'Failed to load configuration', details: err.message });
+    console.error('Error reading config file:', err);
   }
+
+  // Absolute fallback
+  cachedConfig = {
+    maintenanceMode: false,
+    serviceFee: 69,
+    updateFee: 30,
+    hiringEnabled: true,
+    alertMessage: " ",
+    announcement: "",
+    occupiedMode: false
+  };
+  return cachedConfig;
+};
+
+// Config endpoint for remote control
+app.get('/api/config', (req, res) => {
+  res.json(loadConfig());
 });
 
 // Update config (Protected)
@@ -81,14 +90,21 @@ app.post('/api/config/update', (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  // Update memory cache immediately
+  cachedConfig = { ...loadConfig(), ...config };
+
   try {
     const configPath = path.join(process.cwd(), 'api', 'config.json');
-    // Note: This will likely fail on Vercel production as it is read-only
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
-    res.json({ message: 'Config updated successfully' });
+    // Attempt persistence, but don't crash if it fails (Vercel is read-only)
+    fs.writeFileSync(configPath, JSON.stringify(cachedConfig, null, 2), 'utf8');
+    res.json({ message: 'Config updated successfully (Persisted)', config: cachedConfig });
   } catch (err) {
-    console.error('Config update error:', err);
-    res.status(500).json({ error: 'Failed to save configuration. Note: Vercel instances are read-only.', details: err.message });
+    console.warn('Persistence failed (expected on Vercel):', err.message);
+    res.json({ 
+      message: 'Config updated in memory (Note: persistence requires a database)', 
+      config: cachedConfig,
+      persistenceWarning: true 
+    });
   }
 });
 
