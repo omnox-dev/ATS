@@ -101,7 +101,7 @@ app.post('/api/render-pdf', async (req, res) => {
     
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       options = {
-        args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--single-process'],
+        args: chromium.args,
         defaultViewport: chromium.defaultViewport,
         executablePath: await chromium.executablePath(),
         headless: chromium.headless,
