@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import html2pdf from 'html2pdf.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FileSearch, 
@@ -142,7 +141,7 @@ const AnalysisReport = ({ results, improvedResume, onDownloadPdf, onDownloadTxt,
               {/* Ad Spot #1 - Subtle link */}
               <div className="mt-8 border-t border-[var(--border-subtle)] pt-6 w-full text-center group-hover:bg-[#10b981]/5 transition-colors">
                 <span className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] block mb-1">Sponsored By</span>
-                <span className="text-[10px] text-[#10b981] font-bold transition-colors duration-300">Your Company Name</span>
+                <span className="text-[10px] text-[#10b981] font-bold transition-colors duration-300">Craftexa Technologies</span>
               </div>
             </div>
   
@@ -560,165 +559,106 @@ const ATSAnalyzer = () => {
     };
 
     const downloadPdf = async () => {
-        // First try server-side (High Quality)
-        if (useProxy) {
-            setIsGeneratingPdf(true);
-            try {
-                const score = analysisResults?.overallScore || 0;
-                const html = `
-                    <html>
-                    <head>
-                        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-                        <style>
-                            body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
-                            .header { border-bottom: 4px solid #10b981; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-                            .logo { font-size: 24px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; }
-                            .logo span { color: #10b981; }
-                            .score-card { background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 30px; }
-                            .score-value { font-size: 48px; font-weight: 900; color: #10b981; }
-                            .section-title { font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #64748b; margin-bottom: 15px; border-left: 4px solid #10b981; padding-left: 12px; }
-                            .list-item { margin-bottom: 8px; font-size: 13px; display: flex; gap: 8px; }
-                            .bullet { color: #10b981; font-weight: bold; }
-                            .resume-box { background: #fff; border: 1px solid #e2e8f0; padding: 30px; border-radius: 8px; font-size: 12px; white-space: pre-wrap; }
-                            .footer { margin-top: 50px; font-size: 10px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="header">
-                            <div class="logo">ATS<span>MASTER</span></div>
-                            <div style="text-align: right; font-size: 12px; color: #64748b;">Generated: ${new Date().toLocaleDateString()}</div>
+        const score = analysisResults?.overallScore || 0;
+        const html = `
+            <html>
+            <head>
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+                <style>
+                    body { font-family: 'Inter', sans-serif; padding: 40px; color: #0f172a; line-height: 1.5; background: #ffffff; }
+                    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; }
+                    .logo { font-size: 28px; font-weight: 900; letter-spacing: -1.5px; color: #0f172a; text-transform: uppercase; }
+                    .logo span { color: #10b981; }
+                    .score-badge { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 4px 12px; rounded: 9999px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+                    .score-card { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 32px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+                    .score-value { font-size: 56px; font-weight: 900; color: #10b981; line-height: 1; }
+                    .section-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 16px; margin-top: 24px; display: flex; align-items: center; gap: 8px; }
+                    .section-title::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+                    .list-item { margin-bottom: 12px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; color: #334155; }
+                    .bullet { color: #10b981; font-size: 16px; line-height: 1; }
+                    .resume-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 32px; border-radius: 12px; font-family: 'Courier New', monospace; font-size: 11px; white-space: pre-wrap; color: #1e293b; position: relative; overflow: hidden; }
+                    .resume-box::before { content: 'OPTIMIZED VERSION'; position: absolute; top: 12px; right: 12px; font-size: 9px; font-weight: 900; color: #94a3b8; letter-spacing: 0.1em; }
+                    .footer { margin-top: 60px; font-size: 11px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 24px; font-weight: 500; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div class="logo">ATS<span>MASTER</span></div>
+                    <div style="text-align: right;">
+                        <div class="score-badge">Neural Analysis Report</div>
+                        <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Verified: ${new Date().toLocaleDateString()}</div>
+                    </div>
+                </div>
+
+                <div class="score-card">
+                    <div style="display: flex; gap: 48px; align-items: center;">
+                        <div style="text-align: center;">
+                            <div class="score-value">${score}%</div>
+                            <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-top: 4px;">Match Score</div>
                         </div>
-
-                        <div class="score-card">
-                            <div style="display: flex; gap: 40px; align-items: center;">
-                                <div>
-                                    <div class="score-value">${score}%</div>
-                                    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b;">Analysis Score</div>
-                                </div>
-                                <div style="flex: 1;">
-                                    <div class="section-title">Professional Summary</div>
-                                    <div style="font-size: 14px;">${analysisResults?.summary || 'No summary available.'}</div>
-                                </div>
-                            </div>
+                        <div style="flex: 1; border-left: 2px solid #e2e8f0; padding-left: 32px;">
+                            <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 8px;">Analysis Summary</div>
+                            <div style="font-size: 14px; color: #334155; font-weight: 500;">${analysisResults?.summary || 'No summary available.'}</div>
                         </div>
+                    </div>
+                </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-                            <div>
-                                <div class="section-title">Key Strengths</div>
-                                ${(analysisResults?.strengths || []).map(s => `<div class="list-item"><span class="bullet">✓</span> ${s}</div>`).join('')}
-                            </div>
-                            <div>
-                                <div class="section-title">Identified Gaps</div>
-                                ${(analysisResults?.weaknesses || []).map(w => `<div class="list-item"><span class="bullet" style="color:#ef4444">•</span> ${w}</div>`).join('')}
-                            </div>
-                        </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 20px;">
+                    <div>
+                        <div class="section-title">Key Strengths</div>
+                        ${(analysisResults?.strengths || []).map(s => `<div class="list-item"><span class="bullet">✓</span> <span>${s}</span></div>`).join('')}
+                    </div>
+                    <div>
+                        <div class="section-title">Critical Gaps</div>
+                        ${(analysisResults?.weaknesses || []).map(w => `<div class="list-item"><span class="bullet" style="color:#ef4444">•</span> <span>${w}</span></div>`).join('')}
+                    </div>
+                </div>
 
-                        ${improvedResume ? `
-                            <div class="section-title">Strategically Optimized Resume</div>
-                            <div class="resume-box">${improvedResume}</div>
-                        ` : ''}
+                ${improvedResume ? `
+                    <div class="section-title">Strategically Optimized Resume</div>
+                    <div class="resume-box">${improvedResume}</div>
+                ` : ''}
 
-                        <div class="footer">
-                            This report was generated using ATSMASTER Neural Analysis. For peer-to-peer educational use only.
-                        </div>
-                    </body>
-                    </html>
-                `;
-                const resp = await axios.post('/api/render-pdf', { html }, { responseType: 'blob' });
-                const url = URL.createObjectURL(new Blob([resp.data], { type: 'application/pdf' }));
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'ATS_Master_Report.pdf';
-                a.click();
-                setIsGeneratingPdf(false);
-                return;
-            } catch (err) {
-                console.warn('Server-side PDF failed, falling back to client-side...', err);
-                // Continue to client-side
-            }
-        }
+                <div class="footer">
+                            <div>Sponsored By <strong>Craftexa Technologies</strong></div>
+                            <div style="margin-top: 5px;">This report was generated using ATSMASTER Neural Analysis. For peer-to-peer educational use only.</div>
+                </div>
+            </body>
+            </html>
+        `;
 
-        // Client-side Fallback (Works everywhere)
         try {
-            const doc = new jsPDF();
-            const margin = 20;
-            let cursorY = 20;
+            setIsGeneratingPdf(true);
+            console.log('Using high-quality client-side PDF generation...');
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.left = '-9999px';
+            container.style.top = '0';
+            container.innerHTML = html;
+            document.body.appendChild(container);
 
-            // Header
-            doc.setFontSize(22);
-            doc.setTextColor(16, 185, 129); // #10b981
-            doc.setFont('helvetica', 'bold');
-            doc.text('ATS MASTER', margin, cursorY);
-            
-            doc.setFontSize(10);
-            doc.setTextColor(100, 116, 139);
-            doc.text(`Generated: ${new Date().toLocaleDateString()}`, 190, cursorY, { align: 'right' });
-            
-            cursorY += 10;
-            doc.setDrawColor(16, 185, 129);
-            doc.setLineWidth(1);
-            doc.line(margin, cursorY, 190, cursorY);
+            // Give fonts a moment to load
+            await new Promise(resolve => setTimeout(resolve, 500));
 
-            // Score Section
-            cursorY += 15;
-            doc.setFillColor(248, 250, 252);
-            doc.rect(margin, cursorY, 170, 40, 'F');
-            doc.setDrawColor(226, 232, 240);
-            doc.rect(margin, cursorY, 170, 40, 'S');
+            const opt = {
+                margin: [0.3, 0.3],
+                filename: `ATS_Report_${Date.now()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 3, 
+                    useCORS: true, 
+                    letterRendering: true,
+                    allowTaint: true,
+                    logging: false
+                },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
 
-            doc.setFontSize(40);
-            doc.setTextColor(16, 185, 129);
-            doc.text(`${analysisResults?.overallScore || 0}%`, margin + 10, cursorY + 25);
-            
-            doc.setFontSize(14);
-            doc.setTextColor(30, 41, 59);
-            doc.text('NEURAL SUMMARY', margin + 60, cursorY + 10);
-            
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            const summaryLines = doc.splitTextToSize(analysisResults?.summary || '', 100);
-            doc.text(summaryLines, margin + 60, cursorY + 18);
-
-            // Strengths & Weaknesses
-            cursorY += 55;
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('STRENGTHS', margin, cursorY);
-            doc.text('WEAKNESSES', margin + 85, cursorY);
-
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            let sY = cursorY + 8;
-            (analysisResults?.strengths || []).slice(0, 10).forEach(s => {
-                doc.text(`\u2022 ${s}`, margin, sY);
-                sY += 5;
-            });
-
-            let wY = cursorY + 8;
-            (analysisResults?.weaknesses || []).slice(0, 10).forEach(w => {
-                doc.text(`\u2022 ${w}`, margin + 85, wY);
-                wY += 5;
-            });
-
-            // Improved Resume
-            if (improvedResume) {
-                doc.addPage();
-                cursorY = 20;
-                doc.setFontSize(14);
-                doc.setFont('helvetica', 'bold');
-                doc.text('OPTIMIZED CONTENT', margin, cursorY);
-                
-                cursorY += 10;
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'normal');
-                const resumeLines = doc.splitTextToSize(improvedResume, 170);
-                doc.text(resumeLines, margin, cursorY);
-            }
-
-            doc.save('ATS_Master_Report.pdf');
+            await html2pdf().set(opt).from(container).save();
+            document.body.removeChild(container);
         } catch (clientErr) {
-            console.error('Client PDF error:', clientErr);
-            alert('PDF generation failed on both server and client.');
+            console.error('PDF error:', clientErr);
+            alert('PDF generation failed.');
         } finally {
             setIsGeneratingPdf(false);
         }
@@ -787,10 +727,10 @@ const ATSAnalyzer = () => {
                         </div>
                         <div className="text-center space-y-2 relative z-10">
                             <h3 className="text-2xl font-black text-[var(--text-main)] uppercase tracking-tighter">
-                                Vectorizing <span className="text-[#10b981]">PDF Report</span>
+                                Generating <span className="text-[#10b981]">PDF Report</span>
                             </h3>
                             <p className="text-[var(--text-muted)] text-sm font-medium tracking-wide">
-                                Launching headless browser instance and rendering static assets...
+                                Capturing DOM snapshot and rendering static assets...
                             </p>
                             <div className="flex justify-center gap-1 mt-4">
                                 <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1.5 h-1.5 bg-[#10b981] rounded-full"></motion.div>
