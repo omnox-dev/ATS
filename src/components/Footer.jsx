@@ -1,8 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FileSearch } from 'lucide-react';
+import axios from 'axios';
 
 const Footer = ({ onOpenPrivacy }) => {
+  const [config, setConfig] = useState({ serviceFee: 69 });
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const resp = await axios.get('/api/config');
+        setConfig(resp.data);
+      } catch (e) {
+        // Fallback already set
+      }
+    };
+    fetchConfig();
+  }, []);
+
   return (
     <footer className="border-t border-[var(--border-subtle)] py-16 bg-[var(--bg-main)] transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,7 +69,7 @@ const Footer = ({ onOpenPrivacy }) => {
             </div>
           </div>
           <div className="flex flex-col md:flex-row justify-between items-center text-[9px] text-[var(--text-muted)] opacity-60">
-            <p className="italic normal-case tracking-normal mb-2 md:mb-0">*Disclaimer: Structural Typesetting Fee ₹69. Peer pricing model.</p>
+            <p className="italic normal-case tracking-normal mb-2 md:mb-0">*Disclaimer: Structural Typesetting Fee ₹{config.serviceFee}. Peer pricing model.</p>
             <span className="text-[#10b981] font-bold uppercase tracking-tighter">Gemini 2.5 Flash Engine Active</span>
           </div>
         </div>

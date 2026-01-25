@@ -1,9 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Key, Terminal, BrainCircuit, Info, Lightbulb, SearchCode, Shield, Zap } from 'lucide-react';
+import axios from 'axios';
 
 const LandingPage = () => {
+  const [config, setConfig] = useState({ serviceFee: 69 });
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const resp = await axios.get('/api/config');
+        setConfig(resp.data);
+      } catch (e) {
+        console.warn('Failed to fetch config, using defaults');
+      }
+    };
+    fetchConfig();
+  }, []);
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -120,7 +135,7 @@ const LandingPage = () => {
                     Neural Ready
                 </div>
                 <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-white leading-tight uppercase tracking-tighter">Ready to <span className="text-[#10b981]">Upgrade</span> your career?</h2>
-                <p className="text-slate-400 mb-10 text-base sm:text-lg font-medium">Use the analyzer for free or hire a student expert for professional LaTeX typesetting starting at <span className="text-white font-bold">₹69</span>.</p>
+                <p className="text-slate-400 mb-10 text-base sm:text-lg font-medium">Use the analyzer for free or hire a student expert for professional LaTeX typesetting starting at <span className="text-white font-bold">₹{config.serviceFee}</span>.</p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/analyzer" className="bg-[#10b981] text-[#0f172a] px-8 py-4 rounded-xl font-bold hover:bg-emerald-400 transition-all text-center uppercase tracking-widest text-xs">
                     Go to Analyzer
@@ -134,7 +149,7 @@ const LandingPage = () => {
                 <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#10b981] via-transparent to-transparent"></div>
                 <div className="grid grid-cols-2 gap-6 sm:gap-8 w-full relative z-10">
                   {[
-                    { val: "₹69", label: "Min. Rate" },
+                    { val: `₹${config.serviceFee}`, label: "Min. Rate" },
                     { val: "2.5", label: "Flash Engine" },
                     { val: "100%", label: "Privacy Focus" },
                     { val: "Peer", label: "Community" }
