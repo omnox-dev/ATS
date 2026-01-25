@@ -244,8 +244,10 @@ const AnalysisReport = ({ results, improvedResume, onDownloadPdf, onDownloadTxt,
                     disabled={isOptimizing}
                     className="w-full py-5 bg-[#10b981] hover:bg-emerald-400 disabled:bg-[var(--bg-card)] rounded font-black text-white disabled:text-[var(--text-muted)] uppercase tracking-[0.2em] text-xs transition-all flex items-center justify-center gap-4 group shadow-lg"
                 >
-                    {isOptimizing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 fill-current group-hover:scale-110 transition-transform" />}
-                    {isOptimizing ? 'Recalibrating Context...' : 'Improve Content'}
+                    {isOptimizing ? <Loader2 className="w-5 h-5 animate-spin text-[var(--text-muted)]" /> : <Zap className="w-5 h-5 fill-current group-hover:scale-110 transition-transform" />}
+                    <span className={isOptimizing ? 'text-[var(--text-muted)]' : 'text-white'}>
+                        {isOptimizing ? 'Recalibrating Context...' : 'Improve Content'}
+                    </span>
                 </button>
               </div>
 
@@ -630,7 +632,22 @@ const ATSAnalyzer = () => {
             a.click();
         } catch (e) {
             console.error(e);
-            alert('PDF creation failed.');
+            let detail = 'PDF creation failed.';
+            if (e.response && e.response.data instanceof Blob) {
+                // Try to read the error from the blob response
+                const reader = new FileReader();
+                reader.onload = () => {
+                   try {
+                     const errData = JSON.parse(reader.result);
+                     alert(`PDF Error: ${errData.details || errData.error}`);
+                   } catch(parseErr) {
+                     alert('PDF creation failed. Check console for details.');
+                   }
+                };
+                reader.readAsText(e.response.data);
+            } else {
+                alert(detail + ' ' + (e.response?.data?.error || e.message));
+            }
         } finally {
             setIsGeneratingPdf(false);
         }
@@ -857,7 +874,7 @@ const ATSAnalyzer = () => {
                                         disabled={isLoading}
                                         className="group relative w-full h-full bg-[#10b981] hover:bg-emerald-400 disabled:bg-[var(--bg-card)] rounded-2xl p-4 transition-all active:scale-[0.98] shadow-lg"
                                     >
-                                        <div className="h-full w-full rounded-xl border border-[#0f172a]/10 flex flex-col items-center justify-center gap-3 text-white group-disabled:text-[var(--text-muted)]">
+                                        <div className={`h-full w-full rounded-xl border border-[#0f172a]/10 flex flex-col items-center justify-center gap-3 ${isLoading ? 'text-[var(--text-muted)]' : 'text-white'}`}>
                                             {isLoading ? <Loader2 className="w-8 h-8 animate-spin" /> : <Zap className="w-8 h-8 fill-current" />}
                                             <span className="font-extrabold uppercase tracking-[0.2em] text-xs">Analyze Match</span>
                                         </div>
