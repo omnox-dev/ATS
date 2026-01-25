@@ -7,6 +7,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
+import serverless from 'serverless-http';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -237,4 +238,4 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-export default app;
+export default serverless(app);
