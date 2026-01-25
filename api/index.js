@@ -124,6 +124,24 @@ app.post('/api/render-pdf', async (req, res) => {
       };
     }
 
+    // Resolve and log the executable path for diagnostics
+    let resolvedExecutable = options.executablePath;
+    try {
+      if (!resolvedExecutable && chromium && chromium.executablePath) {
+        resolvedExecutable = await chromium.executablePath();
+      }
+    } catch (e) {
+      // ignore - we'll surface this in catch below
+    }
+
+    console.log('Launching Chromium with:', {
+      nodeVersion: process.version,
+      platform: process.platform,
+      executablePath: resolvedExecutable,
+      args: options.args || chromium.args,
+      headless: options.headless,
+    });
+
     const browser = await puppeteer.launch(options);
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
@@ -137,8 +155,39 @@ app.post('/api/render-pdf', async (req, res) => {
     });
     return res.send(pdfBuffer);
   } catch (err) {
-    console.error('PDF render error:', err);
+    // Enhanced error logging for deployment diagnostics
+    console.error('PDF render error:', err && err.stack ? err.stack : err);
+    try {
+      const cp = (await (chromium && chromium.executablePath ? chromium.executablePath() : null)).catch?.(() => null);
+      console.error('Chromium executable probe result:', cp);
+    } catch (probeErr) {
+      console.error('Chromium probe failed:', probeErr && probeErr.stack ? probeErr.stack : probeErr);
+    }
+
     return res.status(500).json({ error: 'Failed to render PDF', details: err.message });
+  }
+});
+
+// Diagnostics endpoint to help debug PDF generation in deployment
+app.get('/api/pdf-diagnostics', async (req, res) => {
+  try {
+    let chromiumPath = null;
+    try {
+      chromiumPath = chromium && chromium.executablePath ? await chromium.executablePath() : null;
+    } catch (e) {
+      chromiumPath = `error: ${e && e.message ? e.message : String(e)}`;
+    }
+
+    return res.json({
+      nodeVersion: process.version,
+      platform: process.platform,
+      env: { NODE_ENV: process.env.NODE_ENV, VERCEL: process.env.VERCEL },
+      chromiumPath,
+      chromiumArgs: chromium ? chromium.args : null,
+      puppeteerVersion: require('../package.json').dependencies['puppeteer-core'] || null,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Diagnostics failed', details: err && err.message });
   }
 });
 
