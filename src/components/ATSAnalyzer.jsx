@@ -430,7 +430,7 @@ const ATSAnalyzer = () => {
         };
 
         const proxyPayload = { ...aiPayload, key: apiKey };
-        let apiUrl = useProxy ? '/api/generate' : `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        let apiUrl = useProxy ? '/api/generate' : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
         try {
             const response = await axios.post(apiUrl, useProxy ? proxyPayload : aiPayload);
@@ -560,105 +560,133 @@ const ATSAnalyzer = () => {
 
     const downloadPdf = async () => {
         const score = analysisResults?.overallScore || 0;
+        
         const html = `
-            <html>
-            <head>
+            <div id="pdf-content" style="width: 800px; padding: 60px; background: white; color: #0f172a; font-family: 'Inter', sans-serif; line-height: 1.5;">
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
                 <style>
-                    body { font-family: 'Inter', sans-serif; padding: 40px; color: #0f172a; line-height: 1.5; background: #ffffff; }
-                    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; }
-                    .logo { font-size: 28px; font-weight: 900; letter-spacing: -1.5px; color: #0f172a; text-transform: uppercase; }
+                    * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+                    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #f1f5f9; padding-bottom: 30px; margin-bottom: 40px; }
+                    .logo { font-size: 32px; font-weight: 900; letter-spacing: -2px; color: #0f172a; text-transform: uppercase; }
                     .logo span { color: #10b981; }
-                    .score-badge { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 4px 12px; rounded: 9999px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
-                    .score-card { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 32px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-                    .score-value { font-size: 56px; font-weight: 900; color: #10b981; line-height: 1; }
-                    .section-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 16px; margin-top: 24px; display: flex; align-items: center; gap: 8px; }
-                    .section-title::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
-                    .list-item { margin-bottom: 12px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; color: #334155; }
-                    .bullet { color: #10b981; font-size: 16px; line-height: 1; }
-                    .resume-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 32px; border-radius: 12px; font-family: 'Courier New', monospace; font-size: 11px; white-space: pre-wrap; color: #1e293b; position: relative; overflow: hidden; }
-                    .resume-box::before { content: 'OPTIMIZED VERSION'; position: absolute; top: 12px; right: 12px; font-size: 9px; font-weight: 900; color: #94a3b8; letter-spacing: 0.1em; }
-                    .footer { margin-top: 60px; font-size: 11px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 24px; font-weight: 500; }
+                    .badge { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 8px 16px; border-radius: 9999px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; display: inline-block; }
+                    .date { font-size: 11px; color: #94a3b8; margin-top: 10px; font-weight: 600; }
+                    .score-hero { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 24px; padding: 40px; margin-bottom: 40px; display: flex; align-items: center; gap: 50px; }
+                    .score-circle { text-align: center; min-width: 160px; }
+                    .score-num { font-size: 72px; font-weight: 900; color: #10b981; line-height: 1; margin: 0; letter-spacing: -3px; }
+                    .score-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-top: 12px; letter-spacing: 0.15em; }
+                    .summary-box { flex: 1; border-left: 3px solid #e2e8f0; padding-left: 40px; }
+                    .section-label { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 12px; letter-spacing: 0.1em; display: block; }
+                    .summary-text { font-size: 15px; color: #334155; line-height: 1.7; font-weight: 500; }
+                    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-bottom: 50px; }
+                    .list-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; }
+                    .item { display: flex; gap: 15px; margin-bottom: 15px; font-size: 14px; color: #334155; line-height: 1.5; }
+                    .icon { font-weight: 900; font-size: 18px; line-height: 1; }
+                    .strength-icon { color: #10b981; }
+                    .gap-icon { color: #ef4444; }
+                    .resume-container { background: #1e293b; color: #f1f5f9; padding: 30px; border-radius: 16px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.6; white-space: pre-wrap; border: 1px solid #0f172a; word-break: break-all; }
+                    .footer { margin-top: 80px; padding-top: 40px; border-top: 2px solid #f1f5f9; text-align: center; }
+                    .sponsor { font-size: 13px; color: #64748b; }
+                    .sponsor strong { color: #0f172a; font-weight: 800; }
+                    .disclaimer { font-size: 11px; color: #94a3b8; margin-top: 10px; font-weight: 500; }
                 </style>
-            </head>
-            <body>
+                
                 <div class="header">
                     <div class="logo">ATS<span>MASTER</span></div>
                     <div style="text-align: right;">
-                        <div class="score-badge">Neural Analysis Report</div>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Verified: ${new Date().toLocaleDateString()}</div>
+                        <div class="badge">Neural Analysis Report</div>
+                        <div class="date">Verified: ${new Date().toLocaleDateString()}</div>
                     </div>
                 </div>
 
-                <div class="score-card">
-                    <div style="display: flex; gap: 48px; align-items: center;">
-                        <div style="text-align: center;">
-                            <div class="score-value">${score}%</div>
-                            <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-top: 4px;">Match Score</div>
-                        </div>
-                        <div style="flex: 1; border-left: 2px solid #e2e8f0; padding-left: 32px;">
-                            <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 8px;">Analysis Summary</div>
-                            <div style="font-size: 14px; color: #334155; font-weight: 500;">${analysisResults?.summary || 'No summary available.'}</div>
-                        </div>
+                <div class="score-hero">
+                    <div class="score-circle">
+                        <p class="score-num">${score}%</p>
+                        <p class="score-label">Match Score</p>
+                    </div>
+                    <div class="summary-box">
+                        <span class="section-label">Analysis Summary</span>
+                        <p class="summary-text">${analysisResults?.summary || 'No summary available.'}</p>
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 20px;">
+                <div class="details-grid">
                     <div>
-                        <div class="section-title">Key Strengths</div>
-                        ${(analysisResults?.strengths || []).map(s => `<div class="list-item"><span class="bullet">✓</span> <span>${s}</span></div>`).join('')}
+                        <div class="list-title">Key Strengths</div>
+                        ${(analysisResults?.strengths || []).map(s => `
+                            <div class="item">
+                                <span class="icon strength-icon">✓</span>
+                                <span>${s}</span>
+                            </div>
+                        `).join('')}
                     </div>
                     <div>
-                        <div class="section-title">Critical Gaps</div>
-                        ${(analysisResults?.weaknesses || []).map(w => `<div class="list-item"><span class="bullet" style="color:#ef4444">•</span> <span>${w}</span></div>`).join('')}
+                        <div class="list-title">Critical Gaps</div>
+                        ${(analysisResults?.weaknesses || []).map(w => `
+                            <div class="item">
+                                <span class="icon gap-icon">•</span>
+                                <span>${w}</span>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
 
                 ${improvedResume ? `
-                    <div class="section-title">Strategically Optimized Resume</div>
-                    <div class="resume-box">${improvedResume}</div>
+                    <div style="margin-top: 40px;">
+                        <div class="list-title">Strategically Optimized Resume</div>
+                        <div class="resume-container">${improvedResume}</div>
+                    </div>
                 ` : ''}
 
                 <div class="footer">
-                            <div>Sponsored By <strong>Craftexa Technologies</strong></div>
-                            <div style="margin-top: 5px;">This report was generated using ATSMASTER Neural Analysis. For peer-to-peer educational use only.</div>
+                    <div class="sponsor">Sponsored By <strong>Craftexa Technologies</strong></div>
+                    <div class="disclaimer">Generated via ATSMASTER Neural Engine • Professional Identity & Verification Services</div>
                 </div>
-            </body>
-            </html>
+            </div>
         `;
 
         try {
             setIsGeneratingPdf(true);
-            console.log('Using high-quality client-side PDF generation...');
+            
             const container = document.createElement('div');
             container.style.position = 'fixed';
-            container.style.left = '-9999px';
             container.style.top = '0';
+            container.style.left = '0';
+            container.style.width = '800px'; 
+            container.style.height = 'auto';
+            container.style.opacity = '0';
+            container.style.pointerEvents = 'none';
+            container.style.zIndex = '-9999';
             container.innerHTML = html;
             document.body.appendChild(container);
 
-            // Give fonts a moment to load
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 3000));
 
             const opt = {
-                margin: [0.3, 0.3],
+                margin: [0.4, 0.4],
                 filename: `ATS_Report_${Date.now()}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
                     scale: 3, 
                     useCORS: true, 
                     letterRendering: true,
-                    allowTaint: true,
-                    logging: false
+                    logging: false,
+                    windowWidth: 800
                 },
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
 
-            await html2pdf().set(opt).from(container).save();
+            const element = container.querySelector('#pdf-content');
+            if (element) {
+                await html2pdf().set(opt).from(element).save();
+            } else {
+                throw new Error('PDF content element not found');
+            }
+            
             document.body.removeChild(container);
         } catch (clientErr) {
             console.error('PDF error:', clientErr);
-            alert('PDF generation failed.');
+            alert('PDF generation failed. Please try again.');
         } finally {
             setIsGeneratingPdf(false);
         }
