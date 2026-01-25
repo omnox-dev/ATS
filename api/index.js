@@ -101,7 +101,7 @@ app.post('/api/render-pdf', async (req, res) => {
     
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       options = {
-        args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
+        args: [...chromium.args, '--hide-scrollbars', '--disable-web-security', '--no-sandbox', '--disable-setuid-sandbox'],
         defaultViewport: chromium.defaultViewport,
         executablePath: await chromium.executablePath(),
         headless: chromium.headless,
