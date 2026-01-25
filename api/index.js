@@ -101,10 +101,11 @@ app.post('/api/render-pdf', async (req, res) => {
     
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       options = {
-        args: chromium.args,
+        args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
         defaultViewport: chromium.defaultViewport,
         executablePath: await chromium.executablePath(),
         headless: chromium.headless,
+        ignoreHTTPSErrors: true,
       };
     } else {
       // Local development (Windows/Mac)

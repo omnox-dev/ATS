@@ -242,7 +242,7 @@ const AnalysisReport = ({ results, improvedResume, onDownloadPdf, onDownloadTxt,
                 <button 
                     onClick={onOptimize}
                     disabled={isOptimizing}
-                    className="w-full py-5 bg-[#10b981] hover:bg-emerald-400 disabled:bg-[var(--bg-card)] rounded font-black text-white uppercase tracking-[0.2em] text-xs transition-all flex items-center justify-center gap-4 group shadow-lg"
+                    className="w-full py-5 bg-[#10b981] hover:bg-emerald-400 disabled:bg-[var(--bg-card)] rounded font-black text-white disabled:text-[var(--text-muted)] uppercase tracking-[0.2em] text-xs transition-all flex items-center justify-center gap-4 group shadow-lg"
                 >
                     {isOptimizing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 fill-current group-hover:scale-110 transition-transform" />}
                     {isOptimizing ? 'Recalibrating Context...' : 'Improve Content'}
@@ -855,9 +855,9 @@ const ATSAnalyzer = () => {
                                     <button 
                                         onClick={runAnalysis}
                                         disabled={isLoading}
-                                        className="group relative w-full h-full bg-[#10b981] hover:bg-emerald-400 disabled:bg-[var(--bg-card)] disabled:text-[var(--text-muted)] rounded-2xl p-4 transition-all active:scale-[0.98] shadow-lg"
+                                        className="group relative w-full h-full bg-[#10b981] hover:bg-emerald-400 disabled:bg-[var(--bg-card)] rounded-2xl p-4 transition-all active:scale-[0.98] shadow-lg"
                                     >
-                                        <div className="h-full w-full rounded-xl border border-[#0f172a]/10 flex flex-col items-center justify-center gap-3 text-white">
+                                        <div className="h-full w-full rounded-xl border border-[#0f172a]/10 flex flex-col items-center justify-center gap-3 text-white group-disabled:text-[var(--text-muted)]">
                                             {isLoading ? <Loader2 className="w-8 h-8 animate-spin" /> : <Zap className="w-8 h-8 fill-current" />}
                                             <span className="font-extrabold uppercase tracking-[0.2em] text-xs">Analyze Match</span>
                                         </div>
