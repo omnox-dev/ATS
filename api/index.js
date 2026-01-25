@@ -101,7 +101,7 @@ app.post('/api/render-pdf', async (req, res) => {
     
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       options = {
-        args: [...chromium.args, '--hide-scrollbars', '--disable-web-security', '--no-sandbox', '--disable-setuid-sandbox'],
+        args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--single-process'],
         defaultViewport: chromium.defaultViewport,
         executablePath: await chromium.executablePath(),
         headless: chromium.headless,
@@ -143,38 +143,49 @@ app.post('/api/render-pdf', async (req, res) => {
       headless: options.headless,
     });
 
-    console.log('Launching browser...');
-    const browser = await puppeteer.launch(options);
-    
-    console.log('Creating new page...');
-    const page = await browser.newPage();
-    
-    console.log('Setting content...');
-    // Use networkidle2 instead of 0 to be more resilient to slow font loading
-    await page.setContent(html, { 
-      waitUntil: 'networkidle2',
-      timeout: 30000 
-    });
-    
-    console.log('Generating PDF...');
-    const pdfBuffer = await page.pdf({ 
-      format: 'A4', 
-      printBackground: true,
-      timeout: 30000
-    });
-    
-    console.log('Closing browser...');
-    await browser.close();
+    let browser = null;
+    try {
+      console.log('Launching browser with options:', JSON.stringify({ ...options, executablePath: !!options.executablePath }));
+      browser = await puppeteer.launch(options);
+      
+      console.log('Creating new page...');
+      const page = await browser.newPage();
+      
+      console.log('Setting content...');
+      // Using domcontentloaded as a fallback if networkidle2 hangs due to font requests
+      await page.setContent(html, { 
+        waitUntil: ['domcontentloaded', 'networkidle2'],
+        timeout: 25000 
+      });
+      
+      console.log('Generating PDF...');
+      const pdfBuffer = await page.pdf({ 
+        format: 'A4', 
+        printBackground: true,
+        timeout: 20000,
+        margin: { top: '0.4in', right: '0.4in', bottom: '0.4in', left: '0.4in' }
+      });
+      
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename="improved_resume.pdf"',
+        'Content-Length': pdfBuffer.length
+      });
+      console.log('PDF sent successfully');
+      return res.send(pdfBuffer);
 
-    res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="improved_resume.pdf"',
-      'Content-Length': pdfBuffer.length
-    });
-    return res.send(pdfBuffer);
+    } catch (innerErr) {
+      console.error('Inner PDF Error:', innerErr);
+      throw innerErr;
+    } finally {
+      if (browser) {
+        console.log('Closing browser...');
+        await browser.close().catch(e => console.error('Error closing browser:', e));
+      }
+    }
   } catch (err) {
     // Enhanced error logging for deployment diagnostics
-    console.error('PDF render error:', err && err.stack ? err.stack : err);
+    console.error('Main PDF render error:', err && err.stack ? err.stack : err);
     try {
       const cp = (await (chromium && chromium.executablePath ? chromium.executablePath() : null)).catch?.(() => null);
       console.error('Chromium executable probe result:', cp);
